@@ -1,4 +1,4 @@
-# EC2 Resources and Autoscaling
+# EC2 Resources and Autoscaling Policies
 
 data "aws_ssm_parameter" "amzn2_linux" {
   name = "/aws/service/ami-amazon-linux-latest/amzn2-ami-hvm-x86_64-gp2"
