@@ -20,7 +20,7 @@ repos:
       # Runs tflint for linting
       - id: tflint
         name: TFLint
-        entry: tflint --config=./setup/.tflint.hcl
+        entry: tflint --config=.tflint.hcl
         language: system
         files: \.tf$
         pass_filenames: false
