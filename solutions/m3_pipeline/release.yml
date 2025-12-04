@@ -1,0 +1,44 @@
+name: Production Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+permissions:
+  contents: read
+  actions: read
+
+env:
+  TF_LOG: INFO
+  TF_INPUT: false
+  TF_VERSION: ${{ vars.TF_VERSION }}
+  ENVIRONMENTS: '["prodeast", "prodwest"]'
+
+jobs:
+  # Setup job to output environments
+  setup:
+    name: Setup
+    runs-on: ubuntu-latest
+    outputs:
+      environments: ${{ env.ENVIRONMENTS }}
+    steps:
+      - name: Output environments
+        run: echo "Deploying to production environments - ${{ env.ENVIRONMENTS }}"
+
+  # Deploy to production environments in parallel
+  deploy:
+    name: Deploy ${{ matrix.environment }}
+    needs: [setup]
+    strategy:
+      fail-fast: false
+      matrix:
+        environment: ${{ fromJson(needs.setup.outputs.environments) }}
+    uses: ./.github/workflows/deploy-environment.yml
+    with:
+      environment: ${{ matrix.environment }}
+      terraform_version: ${{ vars.TF_VERSION }}
+    secrets:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_REGION: ${{ secrets.AWS_REGION }}
