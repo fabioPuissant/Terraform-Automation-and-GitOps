@@ -1,0 +1,51 @@
+# Enforcing Mandatory Tags for
+# aws ec2 instances and autoscaling groups
+
+# This Policy uses tfplan/v2 as the data source
+import "tfplan/v2" as tfplan
+
+# The list of mandatory tags
+mandatory_tags = ["Name", "Environment"]
+
+# Filtering all of 'aws_instance' resources from the plan file
+ec2_instances = filter tfplan.resource_changes as _, resource {
+	resource.mode == "managed" and
+		resource.type == "aws_instance" and
+		(resource.change.actions contains "create" or resource.change.actions == ["update"])
+}
+
+# Filtering all of 'aws_autoscaling_group' resources from the plan file
+autoscaling_groups = filter tfplan.resource_changes as _, resource {
+	resource.mode == "managed" and
+		resource.type == "aws_autoscaling_group" and
+		(resource.change.actions contains "create" or resource.change.actions == ["update"])
+}
+
+# Enforcing Mandatory Tags on EC2 Instances
+deny_ec2_without_mandatory_tags = rule {
+	all ec2_instances as _, instances {
+		all mandatory_tags as tag {
+			any instances.change.after.tags as key, value {
+				key == tag
+			}
+		}
+	}
+}
+
+# Enforcing Mandatory Tags on Autoscaling Groups
+# ASG uses a 'tag' block with key/value attributes instead of a tags map
+deny_asg_without_mandatory_tags = rule {
+	all autoscaling_groups as _, asg {
+		all mandatory_tags as mandatory_tag {
+			any asg.change.after.tag as t {
+				t.key == mandatory_tag
+			}
+		}
+	}
+}
+
+# Main Policy
+main = rule {
+	deny_ec2_without_mandatory_tags and
+	deny_asg_without_mandatory_tags
+}

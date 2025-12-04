@@ -93,11 +93,15 @@ resource "aws_autoscaling_group" "front_end" {
     value               = var.environment
     propagate_at_launch = false
   }
+
+  lifecycle {
+    ignore_changes = [desired_capacity]
+  }
 }
 
 # Load balancer resources
 resource "aws_lb" "front_end" {
-  name               = "${var.prefix}-nlb"
+  name               = "${var.prefix}-${var.environment}-nlb"
   internal           = false
   load_balancer_type = "network"
   subnets            = var.public_subnet_ids
@@ -122,7 +126,7 @@ resource "aws_lb_listener" "front_end" {
 }
 
 resource "aws_lb_target_group" "front_end" {
-  name     = "${var.prefix}-lb-tg"
+  name     = "${var.prefix}-${var.environment}-lb-tg"
   port     = var.app_port
   protocol = "TCP"
   vpc_id   = var.vpc_id
