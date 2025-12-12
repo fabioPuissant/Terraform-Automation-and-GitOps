@@ -12,10 +12,9 @@ on:
         required: true
         type: string
       ci_run_id:
-        description: 'CI workflow run ID for artifact retrieval (optional - if not provided, runs plan and apply)'
-        required: false
+        description: 'CI workflow run ID for artifact retrieval'
+        required: true
         type: string
-        default: ''
     secrets:
       AWS_ACCESS_KEY_ID:
         required: true
@@ -55,24 +54,12 @@ jobs:
       - name: Terraform Init
         run: terraform init -backend-config="./backends/${{ inputs.environment }}.hcl"
 
-      # Use artifact if ci_run_id is provided
       - name: Download Plan Artifact
-        if: inputs.ci_run_id != ''
         uses: actions/download-artifact@v4
         with:
           name: tf-plan-${{ inputs.environment }}-${{ inputs.ci_run_id }}
           run-id: ${{ inputs.ci_run_id }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Terraform Apply (from artifact)
-        if: inputs.ci_run_id != ''
-        run: terraform apply -auto-approve tf.plan
-
-      # Run plan and apply if no ci_run_id (release workflow)
-      - name: Terraform Plan
-        if: inputs.ci_run_id == ''
-        run: terraform plan -var-file="./environments/${{ inputs.environment }}.tfvars" -out=tf.plan
-
       - name: Terraform Apply (from plan)
-        if: inputs.ci_run_id == ''
-        run: terraform apply -auto-approve tf.plan
+        run: terraform apply tf.plan

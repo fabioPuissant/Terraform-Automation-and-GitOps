@@ -1,0 +1,31 @@
+# Enforcing Mandatory Tags for
+# aws vpc instances
+
+# This Policy uses tfplan/v2 as the data source
+import "tfplan/v2" as tfplan
+
+# The list of mandatory tags
+mandatory_tags = ["Name", "Environment"]
+
+# Filtering all of 'aws_vpc' resources from the plan file
+vpc_instances = filter tfplan.resource_changes as _, resource {
+	resource.mode == "managed" and
+		resource.type == "aws_vpc" and
+		(resource.change.actions contains "create" or resource.change.actions == ["update"])
+}
+
+# Enforcing Mandatory Tags on VPC Instances
+deny_vpc_without_mandatory_tags = rule {
+	all vpc_instances as _, instances {
+		all mandatory_tags as tag {
+			any instances.change.after.tags as key, value {
+				key == tag
+			}
+		}
+	}
+}
+
+# Main Policy
+main = rule {
+	deny_vpc_without_mandatory_tags
+}

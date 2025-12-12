@@ -15,7 +15,6 @@ env:
   TF_LOG: INFO
   TF_INPUT: false
   TF_VERSION: ${{ vars.TF_VERSION }}
-  ENVIRONMENTS: '["dev","staging"]'
 
 jobs:
   # Get the workflow run ID from the CI workflow for artifact retrieval
@@ -25,7 +24,6 @@ jobs:
     runs-on: ubuntu-latest
     outputs:
       run_id: ${{ steps.get-run.outputs.run_id }}
-      environments: ${{ env.ENVIRONMENTS }}
     steps:
       - name: Get CI Workflow Run ID
         id: get-run
@@ -48,7 +46,7 @@ jobs:
   deploy-dev:
     name: Deploy dev
     needs: [get-run-id]
-    if: github.event.pull_request.merged == true && contains(fromJson(needs.get-run-id.outputs.environments), 'dev')
+    if: github.event.pull_request.merged == true
     uses: ./.github/workflows/deploy-environment.yml
     with:
       environment: dev
@@ -62,7 +60,7 @@ jobs:
   deploy-staging:
     name: Deploy staging
     needs: [get-run-id, deploy-dev]
-    if: github.event.pull_request.merged == true && contains(fromJson(needs.get-run-id.outputs.environments), 'staging')
+    if: github.event.pull_request.merged == true
     uses: ./.github/workflows/deploy-environment.yml
     with:
       environment: staging

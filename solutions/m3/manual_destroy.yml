@@ -1,10 +1,10 @@
-name: Terraform Destroy
+name: Terraform Manual Destroy
 
 on:
   workflow_dispatch:
     inputs:
       environment:
-        description: 'Environment to deploy, choose "all" to run for all environments'
+        description: 'Environment to destroy, choose "all" to run for all environments'
         required: true
         type: choice
         options:
