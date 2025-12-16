@@ -9,8 +9,19 @@ env:
   TF_LOG: INFO
   TF_INPUT: false
   TF_VERSION: ${{ vars.TF_VERSION }}
+  ENVIRONMENTS: '["dev","staging","prodeast","prodwest"]'
 
 jobs:
+  # Setup job to output environments for matrix
+  setup:
+    name: Setup
+    runs-on: ubuntu-latest
+    outputs:
+      environments: ${{ env.ENVIRONMENTS }}
+    steps:
+      - name: Output environments
+        run: echo "Environments - ${{ env.ENVIRONMENTS }}"
+
   # Format check
   format:
     name: Terraform Format
