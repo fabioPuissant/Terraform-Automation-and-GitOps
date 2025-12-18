@@ -81,4 +81,4 @@ jobs:
 
       - name: Terraform Apply (from artifact)
         if: needs.get-run-id.outputs.run_id != ''
-        run: terraform apply -auto-approve tf.plan
+        run: terraform apply tf.plan
