@@ -5,7 +5,7 @@
 import "tfplan/v2" as tfplan
 
 # The list of mandatory tags
-mandatory_tags = ["Name", "Environment"]
+mandatory_tags = ["Owner", "Environment"]
 
 # Filtering all of 'aws_vpc' resources from the plan file
 vpc_instances = filter tfplan.resource_changes as _, resource {
@@ -18,7 +18,7 @@ vpc_instances = filter tfplan.resource_changes as _, resource {
 deny_vpc_without_mandatory_tags = rule {
 	all vpc_instances as _, instances {
 		all mandatory_tags as tag {
-			any instances.change.after.tags as key, value {
+			any instances.change.after.tags_all as key, value {
 				key == tag
 			}
 		}
