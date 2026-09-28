@@ -4,16 +4,18 @@ terraform {
     aws = {
       source  = "hashicorp/aws"
       version = "~>6.0"
+      
     }
   }
 }
 
 provider "aws" {
-  region = "us-west-2"
+  region = "us-east-1"
+  profile = "syntic-jps"
 }
 
 resource "aws_s3_bucket" "terraform_state" {
-  bucket_prefix = "tw-terraform-state"
+  bucket_prefix = "tw-terraform-state-gitopscourse"
 
   force_destroy = true
 }
